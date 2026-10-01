@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Autonomous taxi passenger display." />
+  <title>Passenger display</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css?v=center-control-2" />
+  <script src="./app.js?v=center-control-2" type="module"></script>
+</head>
+<body>
+  <main id="app" class="app-shell" hidden>
+    <section class="scene-panel" aria-label="View through the passenger window">
+      <img id="scene-image" class="scene-image" alt="" decoding="async" fetchpriority="high" />
+    </section>
+    <section class="display-panel" aria-labelledby="display-title">
+      <header class="display-header">
+        <h1 id="display-title">Passenger display</h1>
+        <div class="vehicle-status"><span class="park-icon" aria-hidden="true">P</span><span>Parked</span></div>
+      </header>
+      <div class="control-stage">
+        <div id="control-area" class="vehicle-control" hidden>
+          <button id="pull-over-button" class="pull-over-button" type="button" aria-label="Pull Over">Pull<br />Over</button>
+        </div>
+      </div>
+      <div class="message-area">
+        <div class="message-content">
+          <span class="message-label">Audio introduction</span>
+          <p id="caption">Select “Start introduction” to begin.</p>
+        </div>
+        <div id="voice-error" class="voice-error" role="alert" hidden></div>
+      </div>
+      <footer class="display-footer">
+        <div class="audio-control">
+          <div class="audio-meter">
+          <div class="audio-status"><span id="message-state" role="status">Preparing introduction…</span><span id="progress-label" aria-hidden="true"></span></div>
+          <progress id="audio-progress" max="100" value="0" aria-label="Introduction progress"></progress>
+          </div>
+          <button id="start-button" class="start-button" type="button" disabled><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.5 12 8l-7 4.5Z" fill="currentColor"/></svg><span id="start-label">Loading…</span></button>
+          <p id="finish-notice" class="finish-notice" hidden>Introduction complete. Please return to the survey.</p>
+        </div>
+      </footer>
+    </section>
+  </main>
+  <main id="invalid-link" class="system-message" hidden>
+    <span class="system-kicker">Passenger display</span>
+    <h1>Link unavailable</h1>
+    <p>Please return to the survey and open the study link provided there.</p>
+  </main>
+  <dialog id="pull-over-dialog" class="pull-over-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <span class="dialog-park" aria-hidden="true">P</span>
+    <h2 id="dialog-title">Vehicle is parked</h2>
+    <p id="dialog-description">This action isn't available right now, as the car is currently parked. The Pull Over function will become active once your trip begins.</p>
+    <button id="close-dialog-button" class="dialog-button" type="button" autofocus>OK</button>
+  </dialog>
+  <audio id="recorded-audio" preload="auto"></audio>
+</body>
+</html>
