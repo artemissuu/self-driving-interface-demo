@@ -70,11 +70,15 @@ body[data-risk="low"] .taxi-page[data-state="playing"] .sunlight {animation:dayl
 .taxi-caption-viewport::-webkit-scrollbar {display:none}
 .taxi-pull-over {flex-shrink:0}
 .taxi-finish a {color:inherit;text-decoration:underline;text-underline-offset:3px}
-dialog {width:calc(100% - 40px);max-width:410px;background:#fff;border:1px solid #e1e3e5;border-radius:17px;padding:26px;box-shadow:0 14px 40px #0003;color:#242528}
-dialog::backdrop {background:#22252a55}
-dialog h2 {font-size:22px;font-weight:500;margin:0 0 15px;line-height:1.3}
-dialog p {font-size:16px;line-height:1.6;color:#5d6267}
-dialog button,.technical-error button {margin-top:20px;width:100%;min-height:44px;background:#242528;color:#fff;border:0;border-radius:8px}
+dialog {width:calc(100% - 40px);max-width:440px;background:#fafafa;border:1px solid #fff9;border-radius:22px;padding:32px 30px 24px;box-shadow:0 24px 72px #00000029,0 2px 8px #0000000d;color:#242528;text-align:center}
+dialog::backdrop {background:#1c20244d;backdrop-filter:blur(3px)}
+dialog h2 {font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 14px;line-height:1.3;text-wrap:balance}
+dialog p {max-width:35ch;margin:0 auto;font-size:16px;line-height:1.6;color:#60656b;text-wrap:pretty}
+dialog form {margin-top:26px}
+dialog button {display:block;width:100%;min-height:48px;padding:12px 18px;background:#292b2e;color:#fff;border:1px solid #292b2e;border-radius:11px;font-size:16px;font-weight:500;transition:background .15s ease}
+dialog button:hover {background:#414449}
+dialog button:active {background:#1c1e20}
+.technical-error button {margin-top:20px;width:100%;min-height:44px;background:#242528;color:#fff;border:0;border-radius:8px}
 .notice {max-width:620px;margin:20vh auto;padding:24px;line-height:1.6}
 .technical-error {position:fixed;z-index:10;bottom:16px;left:50%;transform:translateX(-50%);width:min(460px,90vw);padding:20px;background:#fff;border:1px solid #aaa;border-radius:12px;box-shadow:0 4px 28px #0003;line-height:1.5}
 @media(max-width:850px) {.taxi-mount{padding:4px 4px 4px 5px}.taxi-header{height:28px;padding-inline:14px;font-size:14px}.taxi-screen-main{padding:24px 17px 18px;gap:16px}.taxi-status{gap:20px}.taxi-caption{margin-bottom:20px}.taxi-study-footer{padding-inline:18px;gap:14px}}
@@ -82,9 +86,19 @@ dialog button,.technical-error button {margin-top:20px;width:100%;min-height:44p
 @media(prefers-reduced-motion:reduce) {.taxi-caption{transition:none}.sunlight{animation:none!important}#weather-motion{display:none}}
 
 /* Study navigation sits outside the simulated car, separated by white space. */
-.taxi-study-footer {position:relative;padding:10px 24px 8px;background:#fff}
-.taxi-finish {display:grid;gap:4px;width:100%;text-align:center}
-.study-navigation-label {font:11px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#686868}
-#return-button {display:block;width:100%;min-height:36px;padding:7px 12px;background:#ededed;color:#242528;border:1px solid #d0d0d0;border-radius:2px;font-size:clamp(13px,1.4vw,17px);line-height:1.3}
-#return-button:hover {background:#e1e1e1}
-#return-help {position:absolute;bottom:76px;left:24px;right:24px;padding:10px;background:#fff;border:1px solid #ccc;font-size:14px}
+.taxi-page {grid-template-rows:minmax(0,1fr) 88px}
+.taxi-study-footer {position:relative;padding:10px 24px 12px;background:#fff}
+.taxi-finish {display:grid;gap:6px;width:100%;text-align:center}
+.study-navigation-label {font:11px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#70757b;letter-spacing:.015em}
+#return-button {display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;min-height:46px;padding:11px 20px;background:#f8f9fa;color:#242528;border:1px solid #dfe2e5;border-radius:12px;box-shadow:0 1px 2px #20252b06;font-size:clamp(14px,1.3vw,16px);line-height:1.4;text-align:left;transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
+#return-button:hover {background:#f0f2f4;border-color:#c5cbd1;box-shadow:0 2px 6px #20252b0a}
+#return-button:active {background:#e8ecef;box-shadow:none}
+#return-button:focus-visible {outline:2px solid #30363d;outline-offset:3px}
+.return-completion,.return-action {display:flex;align-items:center;gap:10px}
+.return-completion {color:#555d65;font-weight:400}
+.return-action {color:#24292f;font-weight:600}
+#return-button svg {flex:none;width:20px;height:20px}
+.return-completion svg {color:#727b84}
+#return-help {position:absolute;bottom:calc(100% + 10px);right:24px;max-width:420px;padding:14px 18px;background:#fff;border:1px solid #dfe2e5;border-radius:12px;box-shadow:0 8px 28px #20252b14;font-size:14px;text-align:center}
+@media(max-width:850px) {.taxi-study-footer{padding-inline:18px}#return-button{gap:12px;padding-inline:14px}.return-completion,.return-action{gap:8px}}
+@media(prefers-reduced-motion:reduce) {dialog button,#return-button{transition:none}}

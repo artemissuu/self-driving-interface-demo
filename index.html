@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
 <title>Passenger display</title><link rel="icon" href="./favicon.svg">
-<link rel="stylesheet" href="./styles.css?v=november-20261104"><script type="module" src="./app.js?v=november-20261104"></script>
+<link rel="stylesheet" href="./styles.css?v=november-20261105-ui"><script type="module" src="./app.js?v=november-20261105-ui"></script>
 </head>
 <body>
 <main id="app" class="taxi-page" data-state="loading" hidden>
@@ -25,7 +25,18 @@
    </div>
   </div></div>
  </section>
- <footer class="taxi-study-footer"><p id="intro-instruction">Now you are in the car.<br>Proceed to the passenger display.</p><button id="continue" class="taxi-continue" type="button" disabled>Loading…</button><div id="finish-notice" class="taxi-finish" hidden><small class="study-navigation-label">Study navigation</small><button id="return-button" type="button">This part of the study is complete. Please return to the survey.</button><p id="return-help" role="status" hidden>Please switch back to the survey tab to continue.</p></div></footer>
+ <footer class="taxi-study-footer">
+  <p id="intro-instruction">Now you are in the car.<br>Proceed to the passenger display.</p>
+  <button id="continue" class="taxi-continue" type="button" disabled>Loading…</button>
+  <div id="finish-notice" class="taxi-finish" hidden>
+   <small id="study-navigation-label" class="study-navigation-label">Study navigation</small>
+   <button id="return-button" type="button" aria-describedby="study-navigation-label">
+    <span class="return-completion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg><span>This part of the study is complete.</span></span>
+    <span class="return-action"><span>Please return to the survey.</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+   </button>
+   <p id="return-help" role="status" hidden>Please switch back to the survey tab to continue.</p>
+  </div>
+ </footer>
 </main>
 <section id="invalid-link" class="notice" hidden><h1>This link is incomplete</h1><p>Please open the condition link provided with your survey.</p></section>
 <section id="technical-error" class="technical-error" role="alert" hidden><p id="error-message"></p><button id="retry" type="button">Try again</button></section>

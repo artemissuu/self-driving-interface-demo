@@ -1,4 +1,4 @@
-# Passenger interface — November 4, 2026
+# Passenger interface — November 5, 2026
 
 Eight-condition, desktop research prototype. Two steps within each `?condition=1`–`8` link: a silent car interior introduction, then the passenger display with fixed recorded narration and timed captions.
 
@@ -21,6 +21,8 @@ Photorealistic static scenes plus subtle procedural rain / daylight effects are 
 ## Study return integration — pending address
 
 A full-width clickable completion bar appears outside the car after playback, with white spacing and a small `Study navigation` label. Set `SURVEY_RETURN_URL` in `config.js` to the study team's reviewed HTTPS destination when available. **No URL is currently configured:** clicking the bar tells the participant to switch back to the original survey tab. There is no working Qualtrics return redirect yet. The team must confirm same-tab/new-tab/embedded delivery before participant use.
+
+November 5 UI refinement: the parked-vehicle dialog uses centered text and a single full-width OK action. The study completion bar retains its original wording and full-area click target, with completion status on the left and the survey action on the right. It remains outside the simulated vehicle screen. Narration, condition assignments, and completion timing are unchanged.
 
 ## Deployment
 

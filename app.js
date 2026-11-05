@@ -1,6 +1,6 @@
-import {BUILD_ID,SURVEY_RETURN_URL} from './config.js?v=november-20261104';
-import {parseCondition,cueIndexAt,captionPosition,validateRecording} from './playback-core.js?v=november-20261104';
-import {createWeatherMotion} from './scene-motion.js?v=november-20261104';
+import {BUILD_ID,SURVEY_RETURN_URL} from './config.js?v=november-20261105-ui';
+import {parseCondition,cueIndexAt,captionPosition,validateRecording} from './playback-core.js?v=november-20261105-ui';
+import {createWeatherMotion} from './scene-motion.js?v=november-20261105-ui';
 const get=id=>document.getElementById(id);
 const app=get('app'),audio=get('narration'),dialog=get('pull-over-dialog');
 let ready=false,started=false,finished=false,recording=null,captionIndex=-1,raf=0,blobURL=null,motion=null;
