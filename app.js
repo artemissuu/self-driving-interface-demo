@@ -1,289 +1,111 @@
-// Prototype configuration. Replace the browser voice with approved recordings
-// and reviewed sentence timings before using this page in a study.
-const USE_RECORDED_AUDIO = false;
-const ENABLE_COLOR_CONTROL = false;
-
-const CONDITIONS = Object.freeze({
-  "1": { risk: "high", control: true, tone: "warm" },
-  "2": { risk: "high", control: true, tone: "competence" },
-  "3": { risk: "high", control: false, tone: "warm" },
-  "4": { risk: "high", control: false, tone: "competence" },
-  "5": { risk: "low", control: true, tone: "warm" },
-  "6": { risk: "low", control: true, tone: "competence" },
-  "7": { risk: "low", control: false, tone: "warm" },
-  "8": { risk: "low", control: false, tone: "competence" },
-});
-
-const warmOpening = [
-  "Welcome aboard!",
-  "So glad you're riding with me today.",
-  "I'll be keeping a close eye on the road the whole way.",
-  "I've worked out how to get you there.",
-  "I'll keep checking in on it throughout the ride, so you can relax and feel comfortable.",
-];
-
-const competenceOpening = [
-  "Welcome.",
-  "All systems have been checked and are operating normally.",
-  "This car uses a 360-degree sensor suite to monitor the road, processing over 1,000 environmental data points per second.",
-  "Your route has been calculated, verified, and is being continuously re-optimized in real time.",
-];
-
-const SCRIPTS = Object.freeze({
-  "present-warm": {
-    audio: "./assets/audio/present-warm.mp3",
-    cues: [],
-    sentences: [
-      ...warmOpening,
-      "You'll also see a Pull Over button on the screen.",
-      "If anything unexpected comes up and you'd like to stop, you may use it to pull over the car immediately.",
-      ...(ENABLE_COLOR_CONTROL ? ["You can also change how the screen looks."] : []),
-      "Alright, let's buckle up and get started!",
-    ],
-  },
-  "present-competence": {
-    audio: "./assets/audio/present-competence.mp3",
-    cues: [],
-    sentences: [
-      ...competenceOpening,
-      "The interface also includes a Pull Over button.",
-      "In the event of an unexpected situation, it may be used to bring the vehicle to an immediate stop.",
-      ...(ENABLE_COLOR_CONTROL ? ["The interface style may also be adjusted."] : []),
-      "Please secure your seatbelt; the ride will now begin.",
-    ],
-  },
-  "absent-warm": {
-    audio: "./assets/audio/absent-warm.mp3",
-    cues: [],
-    sentences: [
-      ...warmOpening,
-      "This ride is fully automated from start to finish, so there's nothing for you to do or adjust, just sit back and enjoy the ride.",
-      "Alright, let's buckle up and get started!",
-    ],
-  },
-  "absent-competence": {
-    audio: "./assets/audio/absent-competence.mp3",
-    cues: [],
-    sentences: [
-      ...competenceOpening,
-      "This ride is fully automated, with no manual controls or adjustments involved.",
-      "Please secure your seatbelt; the ride will now begin.",
-    ],
-  },
-});
-
-const conditionId = new URLSearchParams(window.location.search).get("condition");
-const condition = Object.hasOwn(CONDITIONS, conditionId) ? CONDITIONS[conditionId] : null;
-const app = document.querySelector("#app");
-if (!condition) {
-  document.querySelector("#invalid-link").hidden = false;
-} else {
-  app.hidden = false;
-  initialize(condition);
+import {BUILD_ID,SURVEY_RETURN_URL} from './config.js?v=november-20261104';
+import {parseCondition,cueIndexAt,captionPosition,validateRecording} from './playback-core.js?v=november-20261104';
+import {createWeatherMotion} from './scene-motion.js?v=november-20261104';
+const get=id=>document.getElementById(id);
+const app=get('app'),audio=get('narration'),dialog=get('pull-over-dialog');
+let ready=false,started=false,finished=false,recording=null,captionIndex=-1,raf=0,blobURL=null,motion=null;
+const pauseReasons=new Set();
+let technicalFailure=false;
+app.dataset.build=BUILD_ID;
+function state(value){app.dataset.state=value;}
+function error(message){technicalFailure=true;audio.pause();state('error');get('error-message').textContent=message;get('technical-error').hidden=false;get('retry').textContent=ready?'Resume introduction':'Reload page';}
+async function loadJSON(file){const r=await fetch(file,{signal:AbortSignal.timeout(30000)});if(!r.ok)throw new Error('A required file could not load. Please check your connection and try again.');return r.json();}
+async function loadImage(id,src,alt){const img=get(id);img.alt=alt;img.src=src;await img.decode();}
+function alignCaptions(smooth=false){
+ const viewport=get('caption-viewport'),content=get('captions'),first=content.firstElementChild,last=content.lastElementChild;
+ if(!last||!viewport.clientHeight)return;
+ const half=viewport.clientHeight/2;
+ content.style.paddingTop=`${half}px`;content.style.paddingBottom=`${half}px`;
+ const pos=captionPosition(first.offsetTop,last.offsetTop+last.offsetHeight,viewport.clientHeight);
+ viewport.dataset.overflow=String(pos.overflow);
+ viewport.scrollTo({top:pos.top,behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'instant'});
 }
-
-function initialize(selected) {
-  const script = SCRIPTS[`${selected.control ? "present" : "absent"}-${selected.tone}`];
-  const get = (id) => document.getElementById(id);
-  const caption = get("caption");
-  const startButton = get("start-button");
-  const dialog = get("pull-over-dialog");
-  const recordedAudio = get("recorded-audio");
-  const scene = get("scene-image");
-  let state = "loading";
-  let stateBeforeDialog = "ready";
-  let sentenceIndex = 0;
-  let speechGeneration = 0;
-  let advanceAfterDialog = false;
-  let resourcesReady = false;
-  let failedResource = false;
-
-  document.body.dataset.risk = selected.risk;
-  document.body.dataset.audioMode = USE_RECORDED_AUDIO ? "recorded" : "browser-preview";
-  get("control-area").hidden = !selected.control;
-  scene.alt = selected.risk === "high"
-    ? "Rain on the passenger window of a parked car, overlooking a wet street at night."
-    : "View through the passenger window of a parked car onto a clear, dry street at midday.";
-
-  function setState(next) {
-    state = next;
-    app.dataset.state = next;
-    const labels = {
-      loading: ["Preparing introduction…", "Loading…"],
-      ready: ["Ready to play", "Start introduction"],
-      playing: ["Playing introduction", "Playing introduction"],
-      "paused-for-dialog": ["Introduction paused", "Introduction paused"],
-      finished: ["Complete", "Introduction complete"],
-      "audio-error": ["Unable to play", "Retry introduction"],
-    };
-    get("message-state").textContent = labels[next][0];
-    get("start-label").textContent = labels[next][1];
-    startButton.disabled = !["ready", "audio-error"].includes(next);
-    startButton.hidden = ["playing", "paused-for-dialog", "finished"].includes(next);
-    get("finish-notice").hidden = next !== "finished";
-  }
-
-  function progress(value) {
-    const percent = Math.max(0, Math.min(100, value));
-    get("audio-progress").value = percent;
-    get("progress-label").textContent = percent > 0 ? `${Math.round(percent)}%` : "";
-  }
-
-  function cancelSpeech() {
-    speechGeneration += 1;
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-  }
-
-  function showError(message, resource = false) {
-    cancelSpeech();
-    recordedAudio.pause();
-    failedResource = resource;
-    get("voice-error").textContent = message;
-    get("voice-error").hidden = false;
-    caption.textContent = "The introduction could not load. Please try again.";
-    if (dialog.open) dialog.close();
-    setState("audio-error");
-  }
-
-  function finish() {
-    if (state !== "playing") return;
-    caption.textContent = script.sentences.at(-1);
-    progress(100);
-    setState("finished");
-  }
-
-  function updateRecordedCaption() {
-    if (!USE_RECORDED_AUDIO || state !== "playing") return;
-    let index = 0;
-    for (let i = 0; i < script.cues.length; i += 1) {
-      if (recordedAudio.currentTime >= script.cues[i]) index = i;
-    }
-    caption.textContent = script.sentences[index];
-    if (Number.isFinite(recordedAudio.duration) && recordedAudio.duration > 0) {
-      progress(recordedAudio.currentTime / recordedAudio.duration * 100);
-    }
-  }
-
-  function speakNextSentence() {
-    if (state !== "playing") return;
-    if (sentenceIndex >= script.sentences.length) { finish(); return; }
-    caption.textContent = script.sentences[sentenceIndex];
-    progress(sentenceIndex / script.sentences.length * 100);
-    const generation = speechGeneration;
-    const utterance = new SpeechSynthesisUtterance(script.sentences[sentenceIndex]);
-    utterance.lang = "en-US";
-    utterance.rate = selected.tone === "warm" ? 0.94 : 0.98;
-    utterance.pitch = selected.tone === "warm" ? 1.08 : 0.94;
-    const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find((v) => v.lang === "en-US") ?? voices.find((v) => v.lang.startsWith("en"));
-    if (voice) utterance.voice = voice;
-    utterance.onend = () => {
-      if (generation !== speechGeneration) return;
-      sentenceIndex += 1;
-      if (state === "paused-for-dialog") advanceAfterDialog = true;
-      else speakNextSentence();
-    };
-    utterance.onerror = (event) => {
-      if (generation === speechGeneration && !["interrupted", "canceled"].includes(event.error)) {
-        showError("Your browser could not play the audio. Please try again.");
-      }
-    };
-    window.speechSynthesis.speak(utterance);
-  }
-
-  async function prepare() {
-    resourcesReady = false;
-    failedResource = false;
-    get("voice-error").hidden = true;
-    setState("loading");
-    try {
-      await new Promise((resolve, reject) => {
-        scene.onload = resolve;
-        scene.onerror = () => reject(new Error("The scene could not load. Check your connection and retry."));
-        scene.src = `./assets/scenes/${selected.risk === "high" ? "rainy-night" : "sunny-day"}.png`;
-      });
-      if (USE_RECORDED_AUDIO) {
-        if (script.cues.length !== script.sentences.length || script.cues[0] !== 0 ||
-            script.cues.some((cue, i) => !Number.isFinite(cue) || cue < 0 || (i > 0 && cue <= script.cues[i - 1]))) {
-          throw new Error("The introduction recording has not been configured correctly.");
-        }
-        await new Promise((resolve, reject) => {
-          const clean = () => { recordedAudio.removeEventListener("canplay", ready); recordedAudio.removeEventListener("error", error); };
-          const ready = () => { clean(); resolve(); };
-          const error = () => { clean(); reject(new Error("The audio could not load. Check your connection and retry.")); };
-          recordedAudio.addEventListener("canplay", ready);
-          recordedAudio.addEventListener("error", error);
-          recordedAudio.src = script.audio;
-          recordedAudio.load();
-        });
-      }
-      resourcesReady = true;
-      caption.textContent = "Select “Start introduction” to begin.";
-      if (dialog.open) stateBeforeDialog = "ready";
-      else setState("ready");
-    } catch (error) { showError(error.message, true); }
-  }
-
-  async function start() {
-    if (!["ready", "audio-error"].includes(state)) return;
-    if (failedResource || !resourcesReady) { await prepare(); return; }
-    get("voice-error").hidden = true;
-    sentenceIndex = 0;
-    advanceAfterDialog = false;
-    progress(0);
-    if (USE_RECORDED_AUDIO) {
-      recordedAudio.currentTime = 0;
-      caption.textContent = script.sentences[0];
-      setState("playing");
-      try { await recordedAudio.play(); }
-      catch { showError("The audio could not start. Please try again."); }
-    } else {
-      if (!("speechSynthesis" in window)) {
-        showError("This browser cannot play the preview audio. Please use a supported desktop browser.");
-        return;
-      }
-      cancelSpeech();
-      window.speechSynthesis.resume();
-      setState("playing");
-      speakNextSentence();
-    }
-  }
-
-  startButton.addEventListener("click", start);
-  recordedAudio.addEventListener("timeupdate", updateRecordedCaption);
-  recordedAudio.addEventListener("ended", () => {
-    if (state === "paused-for-dialog") advanceAfterDialog = true;
-    else finish();
-  });
-  recordedAudio.addEventListener("error", () => {
-    if (USE_RECORDED_AUDIO && ["playing", "paused-for-dialog"].includes(state)) {
-      showError("The audio could not continue. Please try again.");
-    }
-  });
-  get("pull-over-button").addEventListener("click", () => {
-    stateBeforeDialog = state;
-    advanceAfterDialog = false;
-    if (state === "playing") {
-      if (USE_RECORDED_AUDIO) recordedAudio.pause();
-      else window.speechSynthesis.pause();
-    }
-    setState("paused-for-dialog");
-    dialog.showModal();
-  });
-  get("close-dialog-button").addEventListener("click", () => dialog.close());
-  dialog.addEventListener("close", () => {
-    if (state !== "paused-for-dialog") return;
-    setState(stateBeforeDialog);
-    if (state !== "playing") return;
-    if (USE_RECORDED_AUDIO) {
-      if (advanceAfterDialog || recordedAudio.ended) finish();
-      else recordedAudio.play().catch(() => showError("The audio could not resume. Please try again."));
-    } else {
-      window.speechSynthesis.resume();
-      if (advanceAfterDialog) speakNextSentence();
-    }
-    advanceAfterDialog = false;
-  });
-  window.addEventListener("pagehide", () => { recordedAudio.pause(); cancelSpeech(); });
-  prepare();
+function syncCaptions(){
+ if(!started||!recording)return;
+ const index=cueIndexAt(audio.currentTime,recording.cues);
+ if(index===captionIndex)return;
+ const content=get('captions');
+ if(index<captionIndex)content.replaceChildren();
+ for(let i=content.children.length;i<=index;i++) {const p=document.createElement('p');p.className='taxi-caption';p.textContent=recording.cues[i].text;content.append(p);}
+ for(let i=0;i<content.children.length;i++)content.children[i].dataset.current=String(i===index);
+ const animate=captionIndex>=0;captionIndex=index;
+ requestAnimationFrame(()=>alignCaptions(animate));
 }
+function tick(){syncCaptions();if(!audio.paused&&!audio.ended)raf=requestAnimationFrame(tick);else raf=0;}
+function play(){
+ if(!started||finished||technicalFailure||pauseReasons.size)return;
+ // This call runs directly inside the Continue/OK gesture. No asynchronous load before it.
+ const promise=audio.play();state('playing');
+ promise.then(()=>{if(pauseReasons.size||technicalFailure){audio.pause();return;}cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);})
+ .catch(e=>{if(e.name==='AbortError'&&(pauseReasons.size||finished))return;error('The audio could not start. Check your sound settings, then select Resume introduction.');});
+}
+function pause(reason){pauseReasons.add(reason);if(started&&!finished&&!technicalFailure){audio.pause();state('paused');}}
+function resume(reason){pauseReasons.delete(reason);if(started&&!finished&&!technicalFailure&&!pauseReasons.size)play();}
+get('continue').addEventListener('click',()=>{
+ if(!ready||started)return;
+ started=true;get('intro-page').hidden=true;get('display-page').hidden=false;
+ get('intro-instruction').hidden=true;get('continue').hidden=true;
+ get('caption-viewport').focus({preventScroll:true});motion.start();syncCaptions();play();
+});
+get('pull-over').addEventListener('click',()=>{pause('dialog');dialog.showModal();});
+// Resume directly in the OK/Escape gesture; close event covers other native close paths.
+function closeDialog(){dialog.close();resume('dialog');}
+get('pull-over-dialog').querySelector('form').addEventListener('submit',e=>{e.preventDefault();closeDialog();});
+get('pull-over-dialog').addEventListener('cancel',e=>{e.preventDefault();closeDialog();});
+dialog.addEventListener('close',()=>{if(pauseReasons.has('dialog'))resume('dialog');});
+get('retry').addEventListener('click',()=>{if(!ready){location.reload();return;}get('technical-error').hidden=true;technicalFailure=false;play();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause('hidden');else resume('hidden');});
+audio.addEventListener('timeupdate',syncCaptions);
+audio.addEventListener('ended',()=>{
+ if(!started||technicalFailure)return;
+ finished=true;cancelAnimationFrame(raf);syncCaptions();state('finished');get('finish-notice').hidden=false;
+});
+audio.addEventListener('error',()=>{if(ready)error('The recording could not play. Please check your connection and try again.');});
+new ResizeObserver(()=>requestAnimationFrame(()=>alignCaptions())).observe(get('caption-viewport'));
+get('return-button').addEventListener('click',()=>{
+ if(!finished)return;
+ if(SURVEY_RETURN_URL){location.assign(SURVEY_RETURN_URL);return;}
+ get('return-help').hidden=false;
+});
+window.addEventListener('pagehide',()=>{audio.pause();motion?.stop();cancelAnimationFrame(raf);});
+window.addEventListener('pageshow',e=>{if(e.persisted&&started&&!finished){motion?.start();resume('hidden');}});
+async function initialize(){
+ try{
+  const stimuli=await loadJSON('./stimuli.json?v='+BUILD_ID);
+  const selected=parseCondition(location.search,stimuli.conditions);
+  if(!selected){get('invalid-link').hidden=false;return;}
+  app.hidden=false;app.dataset.condition=selected.id;
+  document.body.dataset.risk=selected.risk;document.body.dataset.tone=selected.tone;document.body.dataset.audioMode='recorded';
+  const night=selected.risk==='high',theme=night?'night':'day',key=`${selected.control?'present':'absent'}-${selected.tone}`;
+  app.dataset.script=key;
+  get('pull-over').hidden=!selected.control;
+  get('clock').textContent=night?'7:30 PM':'11:30 AM';get('clock').dateTime=night?'19:30':'11:30';
+  get('weather-label').textContent=night?'Rain':'Sunny';
+  get('weather-icon').innerHTML=night?'<path d="M4 14a4 4 0 1 1 1-7 6 6 0 0 1 11-1 4 4 0 0 1 3 8"/><path d="m8 15-1 3m6-3-1 3m6-3-1 3m-6 1-1 2"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>';
+  const images=Promise.all([
+   loadImage('intro-image',`./assets/scenes/intro-${theme}.webp`,`Rear-seat view of a parked car, an empty driver seat, passenger display mounted behind the center console, and ${night?'rainy nighttime':'sunny daytime'} street.`),
+   loadImage('window-image',`./assets/scenes/window-${theme}.webp`,`${night?'Rainy night':'Sunny daytime'} street through the window of the parked car.`),
+   loadImage('route-image',`./assets/maps/route-${theme}.svg`,`${night?'Night':'Day'} navigation map with the same planned route and no place names.`)
+  ]);
+  // Observe early failures while the recording manifest is being fetched.
+  images.catch(()=>{});
+  const manifest=await loadJSON('./assets/audio/manifest.json?v='+BUILD_ID);
+  recording=manifest.scripts[key];
+  if(!validateRecording(recording,stimuli.scripts[key]))throw new Error('The recording and transcript do not match. Please contact the study team.');
+  const response=await fetch(recording.file+'?v='+BUILD_ID,{signal:AbortSignal.timeout(45000)});
+  if(!response.ok)throw new Error('The recording could not load. Please check your connection and try again.');
+  const blob=await response.blob();blobURL=URL.createObjectURL(blob);
+  const audioReady=new Promise((resolve,reject)=>{
+   const timeout=setTimeout(()=>{clean();reject(new Error('The recording took too long to load. Please try again.'));},30000);
+   const clean=()=>{clearTimeout(timeout);audio.removeEventListener('canplay',onReady);audio.removeEventListener('error',onError);};
+   const onReady=()=>{clean();Math.abs(audio.duration-recording.duration)<.2?resolve():reject(new Error('The recording is incomplete. Please reload the page.'));};
+   const onError=()=>{clean();reject(new Error('This browser could not load the audio. Please try another desktop browser.'));};
+   audio.addEventListener('canplay',onReady);audio.addEventListener('error',onError);audio.src=blobURL;audio.load();
+  });
+  await Promise.all([images,audioReady]);
+  if(SURVEY_RETURN_URL&&new URL(SURVEY_RETURN_URL).protocol!=='https:')throw new Error('The survey return address must use HTTPS.');
+  motion=createWeatherMotion(get('weather-motion'),selected.risk);
+  ready=true;state('ready');get('continue').textContent='Continue';get('continue').disabled=false;
+ }catch(e){error(e.message||'The experience could not load. Please try again.');}
+}
+initialize();

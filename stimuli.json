@@ -1,0 +1,82 @@
+{
+  "conditions": {
+    "1": {
+      "risk": "high",
+      "control": true,
+      "tone": "warm"
+    },
+    "2": {
+      "risk": "high",
+      "control": true,
+      "tone": "competence"
+    },
+    "3": {
+      "risk": "high",
+      "control": false,
+      "tone": "warm"
+    },
+    "4": {
+      "risk": "high",
+      "control": false,
+      "tone": "competence"
+    },
+    "5": {
+      "risk": "low",
+      "control": true,
+      "tone": "warm"
+    },
+    "6": {
+      "risk": "low",
+      "control": true,
+      "tone": "competence"
+    },
+    "7": {
+      "risk": "low",
+      "control": false,
+      "tone": "warm"
+    },
+    "8": {
+      "risk": "low",
+      "control": false,
+      "tone": "competence"
+    }
+  },
+  "scripts": {
+    "present-warm": [
+      "Welcome aboard!",
+      "So glad you're riding with me today.",
+      "I'll be keeping a close eye on the road the whole way.",
+      "I've worked out how to get you there.",
+      "I'll keep checking in on it throughout the ride, so you can relax and feel comfortable.",
+      "You'll also see a Pull Over button on the screen.",
+      "If anything unexpected comes up and you'd like to stop, you may use it to pull over the car immediately.",
+      "Alright, let's buckle up and get started!"
+    ],
+    "present-competence": [
+      "Welcome.",
+      "All systems have been checked and are operating normally.",
+      "This car uses a 360-degree sensor suite to monitor the road, processing over 1,000 environmental data points per second.",
+      "Your route has been calculated, verified, and is being continuously re-optimized in real time.",
+      "The interface also includes a Pull Over button.",
+      "In the event of an unexpected situation, it may be used to bring the vehicle to an immediate stop.",
+      "Please secure your seatbelt; the ride will now begin."
+    ],
+    "absent-warm": [
+      "Welcome aboard!",
+      "So glad you're riding with me today.",
+      "I'll be keeping a close eye on the road the whole way.",
+      "I've worked out how to get you there.",
+      "I'll keep checking in on it throughout the ride, so you can relax and feel comfortable.",
+      "This ride is fully automated from start to finish, so there's nothing for you to do or adjust, just sit back and enjoy the ride.",
+      "Alright, let's buckle up and get started!"
+    ],
+    "absent-competence": [
+      "Welcome.",
+      "All systems have been checked and are operating normally.",
+      "This car uses a 360-degree sensor suite to monitor the road, processing over 1,000 environmental data points per second.",
+      "Your route has been calculated, verified, and is being continuously re-optimized in real time.",
+      "This ride is fully automated, with no manual controls or adjustments involved.",
+      "Please secure your seatbelt; the ride will now begin."
+    ]
+  }
+}

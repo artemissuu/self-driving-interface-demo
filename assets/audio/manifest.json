@@ -1,0 +1,194 @@
+{
+  "model": "Kokoro-82M v1.0",
+  "engine": "kokoro-onnx 0.4.9",
+  "voice": "af_heart",
+  "language": "en-US",
+  "sampleRate": 24000,
+  "reviewStatus": "AI-generated candidate; researcher listening review required",
+  "scripts": {
+    "present-warm": {
+      "file": "./assets/audio/present-warm.wav",
+      "duration": 29.29333,
+      "speed": 0.91,
+      "pauseSeconds": 0.65,
+      "peak": 0.75349,
+      "speechRmsDb": -21.0,
+      "sha256": "b70be891ef99ffd6cbba29a66f2fcab965c60860d70dfa50e0b7256c2eda635c",
+      "cues": [
+        {
+          "start": 0.0,
+          "end": 1.30133,
+          "text": "Welcome aboard!"
+        },
+        {
+          "start": 1.95133,
+          "end": 3.978,
+          "text": "So glad you're riding with me today."
+        },
+        {
+          "start": 4.628,
+          "end": 7.572,
+          "text": "I'll be keeping a close eye on the road the whole way."
+        },
+        {
+          "start": 8.222,
+          "end": 10.078,
+          "text": "I've worked out how to get you there."
+        },
+        {
+          "start": 10.728,
+          "end": 15.336,
+          "text": "I'll keep checking in on it throughout the ride, so you can relax and feel comfortable."
+        },
+        {
+          "start": 15.986,
+          "end": 18.58867,
+          "text": "You'll also see a Pull Over button on the screen."
+        },
+        {
+          "start": 19.23867,
+          "end": 25.36133,
+          "text": "If anything unexpected comes up and you'd like to stop, you may use it to pull over the car immediately."
+        },
+        {
+          "start": 26.01133,
+          "end": 28.44333,
+          "text": "Alright, let's buckle up and get started!"
+        }
+      ]
+    },
+    "present-competence": {
+      "file": "./assets/audio/present-competence.wav",
+      "duration": 36.30067,
+      "speed": 0.95,
+      "pauseSeconds": 0.6,
+      "peak": 0.71655,
+      "speechRmsDb": -21.0,
+      "sha256": "f9094ae092137f3971d97c98ccd15f2038190d42163e87f8dc18b809a308d8e6",
+      "cues": [
+        {
+          "start": 0.0,
+          "end": 0.98133,
+          "text": "Welcome."
+        },
+        {
+          "start": 1.58133,
+          "end": 4.67467,
+          "text": "All systems have been checked and are operating normally."
+        },
+        {
+          "start": 5.27467,
+          "end": 14.768,
+          "text": "This car uses a 360-degree sensor suite to monitor the road, processing over 1,000 environmental data points per second."
+        },
+        {
+          "start": 15.368,
+          "end": 21.59733,
+          "text": "Your route has been calculated, verified, and is being continuously re-optimized in real time."
+        },
+        {
+          "start": 22.19733,
+          "end": 25.09867,
+          "text": "The interface also includes a Pull Over button."
+        },
+        {
+          "start": 25.69867,
+          "end": 31.71467,
+          "text": "In the event of an unexpected situation, it may be used to bring the vehicle to an immediate stop."
+        },
+        {
+          "start": 32.31467,
+          "end": 35.45067,
+          "text": "Please secure your seatbelt; the ride will now begin."
+        }
+      ]
+    },
+    "absent-warm": {
+      "file": "./assets/audio/absent-warm.wav",
+      "duration": 28.11,
+      "speed": 0.91,
+      "pauseSeconds": 0.65,
+      "peak": 0.69475,
+      "speechRmsDb": -21.0,
+      "sha256": "90442fa662a86fc1042dcc5e4e78594fa258479c5045fdbcb6b60654d147dd84",
+      "cues": [
+        {
+          "start": 0.0,
+          "end": 1.30133,
+          "text": "Welcome aboard!"
+        },
+        {
+          "start": 1.95133,
+          "end": 3.978,
+          "text": "So glad you're riding with me today."
+        },
+        {
+          "start": 4.628,
+          "end": 7.572,
+          "text": "I'll be keeping a close eye on the road the whole way."
+        },
+        {
+          "start": 8.222,
+          "end": 10.078,
+          "text": "I've worked out how to get you there."
+        },
+        {
+          "start": 10.728,
+          "end": 15.336,
+          "text": "I'll keep checking in on it throughout the ride, so you can relax and feel comfortable."
+        },
+        {
+          "start": 15.986,
+          "end": 24.178,
+          "text": "This ride is fully automated from start to finish, so there's nothing for you to do or adjust, just sit back and enjoy the ride."
+        },
+        {
+          "start": 24.828,
+          "end": 27.26,
+          "text": "Alright, let's buckle up and get started!"
+        }
+      ]
+    },
+    "absent-competence": {
+      "file": "./assets/audio/absent-competence.wav",
+      "duration": 32.03133,
+      "speed": 0.95,
+      "pauseSeconds": 0.6,
+      "peak": 0.7175,
+      "speechRmsDb": -21.0,
+      "sha256": "00b48d05cb0d72bf4e39bf84af58e2b9fc80ef4c0173465cee2dbcdfd1f6f206",
+      "cues": [
+        {
+          "start": 0.0,
+          "end": 0.98133,
+          "text": "Welcome."
+        },
+        {
+          "start": 1.58133,
+          "end": 4.67467,
+          "text": "All systems have been checked and are operating normally."
+        },
+        {
+          "start": 5.27467,
+          "end": 14.768,
+          "text": "This car uses a 360-degree sensor suite to monitor the road, processing over 1,000 environmental data points per second."
+        },
+        {
+          "start": 15.368,
+          "end": 21.59733,
+          "text": "Your route has been calculated, verified, and is being continuously re-optimized in real time."
+        },
+        {
+          "start": 22.19733,
+          "end": 27.44533,
+          "text": "This ride is fully automated, with no manual controls or adjustments involved."
+        },
+        {
+          "start": 28.04533,
+          "end": 31.18133,
+          "text": "Please secure your seatbelt; the ride will now begin."
+        }
+      ]
+    }
+  }
+}
